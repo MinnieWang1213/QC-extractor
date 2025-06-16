@@ -1,5 +1,5 @@
-# -*- coding: utf-8 -*- 
-"""QC Extraction with CATEGORY and ERROR"""
+# -*- coding: utf-8 -*-
+"""QC Extraction with CATEGORY normalization and ERROR field"""
 
 import streamlit as st
 from docx import Document
@@ -56,6 +56,18 @@ error_types = [
     "Track changes not accepted and/or comments/mark-ups not removed"
 ]
 
+VALID_CATEGORIES = [
+    'Plain Text', 'Text with Tables/Charts', 'Text with many footnotes', 'Budget',
+    'BoA', 'Letters/Reports', 'RES-related', 'Supplements', 'Publications', 'Other'
+]
+
+def normalize_category(raw_category):
+    raw_category = raw_category.strip().lower()
+    for valid in VALID_CATEGORIES:
+        if raw_category == valid.lower():
+            return valid
+    return 'Other'
+
 def extract_errors_and_comments(doc):
     results = []
     shorthand_map = {'c': 'Content', 's': 'Style', 'p': 'Process'}
@@ -89,11 +101,12 @@ if uploaded_files:
         rating = extract_rating(raw_text)
         alert_flag = check_alert(raw_text)
 
-        # Split CATEGORY and SYMBOL
+        # Split and normalize CATEGORY and SYMBOL
         if "；" in category_raw:
-            category_main, symbol = [part.strip() for part in category_raw.split("；", 1)]
+            raw_category_part, symbol = [part.strip() for part in category_raw.split("；", 1)]
         else:
-            category_main, symbol = category_raw.strip(), ""
+            raw_category_part, symbol = category_raw.strip(), ""
+        category_main = normalize_category(raw_category_part)
 
         errors = extract_errors_and_comments(doc)
 
