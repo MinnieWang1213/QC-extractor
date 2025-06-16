@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""QC Extraction with CATEGORY normalization and ERROR field"""
+"""QC Extraction with CATEGORY normalization and ERROR field (preserve unmatched)"""
 
 import streamlit as st
 from docx import Document
@@ -62,11 +62,12 @@ VALID_CATEGORIES = [
 ]
 
 def normalize_category(raw_category):
-    raw_category = raw_category.strip().lower()
+    raw_category_clean = raw_category.strip()
+    raw_lower = raw_category_clean.lower()
     for valid in VALID_CATEGORIES:
-        if raw_category == valid.lower():
-            return valid
-    return 'Other'
+        if raw_lower == valid.lower():
+            return valid  # Return standardized form
+    return raw_category_clean  # Keep original if unmatched
 
 def extract_errors_and_comments(doc):
     results = []
